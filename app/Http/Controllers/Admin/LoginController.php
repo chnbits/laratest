@@ -20,14 +20,11 @@ class LoginController extends BaseController
         $validate = Auth::guard('admin')->attempt(['username'=>$username,'password'=>$password]);
 
         if (!$validate){
-            return $this->res(['code'=>1,'msg'=>'用户名或密码错误！']);
+            return $this->res(1,'用户名或密码错误！');
         }
 
         if (!captcha_api_check($captcha,$captchaKey,'flat')){
-            return response()->json([
-                'code'=>1,
-                'msg'=>'验证码错误！'
-            ]);
+            return $this->res(1,'验证码错误！');
         }
 
         $user = Auth::guard('admin')->user();
@@ -52,6 +49,9 @@ class LoginController extends BaseController
         );
         Login_record::index($parm);
 
+        if ($user['state']===1){
+            return $this->res(1,'账号被禁用，请联系管理员！');
+        }
         $res = array(
             'code'=>0,
             'msg'=>'登录成功！',
@@ -59,6 +59,6 @@ class LoginController extends BaseController
             'access_token'=>$tokenResult->accessToken,
             'expires_at' => Carbon::parse($tokenResult->token->expires_at)->toDateTimeString()
         );
-        return $this->res($res);
+        return response()->json($res);
     }
 }

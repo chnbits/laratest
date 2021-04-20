@@ -22,6 +22,9 @@ class AuthMiddleware
         if (!$isAdmin){
             return response()->json(['code'=>401,'msg'=>'未授权！']);
         }
+        if ($isAdmin['state'] === 1){
+            return response()->json(['code'=>401,'msg'=>'账户已禁用！']);
+        }
         $request->admin = $isAdmin;
         return $next($request);
     }
