@@ -117,6 +117,30 @@ class SystemController extends BaseController
         }
         return $this->res(0, '删除成功！');
     }
+    //导入用户
+    public function importUser(Request $request)
+    {
+        $importData = $request->post('data');
+
+        $num = 0;
+        $temp = array();
+        foreach ($importData as $value) {
+            $temp['username'] = $value['0'];
+            $temp['password'] = bcrypt($value['1']);
+            $temp['nickname'] = $value['2'];
+            $temp['trueName'] = $value['3'];
+            $temp['phone'] = $value['4'];
+            $temp['email'] = $value['5'];
+            $temp['sex'] = $value['6']==='男'?1:0;
+
+            $res = DB::table($this->admin_table)->updateOrInsert(['username'=>$temp['username']],$temp);
+
+            if ($res){
+                $num += 1;
+            }
+        }
+        return $this->res(0,'共导入了'.$num.'条数据',$num);
+    }
     //获取全部角色
     public function getRole()
     {

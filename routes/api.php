@@ -34,8 +34,10 @@ Route::group(['middleware'=>'auth_passport'],function (){
     Route::put('/sys/user/state/{id}',[SystemController::class,'changeUserState']);
     Route::put('/sys/user',[SystemController::class,'editUser']);
     Route::post('/sys/user',[SystemController::class,'createUser']);
+    Route::post('sys/user/import',[SystemController::class,'importUser']);
     Route::post('/sys/user/{id}',[SystemController::class,'deleteUser']);
     Route::post('sys/user/batch',[SystemController::class,'deleteUser']);
+
 
     Route::get('/sys/role/page',[SystemController::class,'getRolePage']);
     Route::get('/sys/role/menu',[SystemController::class,'getRoleMenu']);
