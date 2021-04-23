@@ -132,9 +132,7 @@ class SystemController extends BaseController
             $temp['phone'] = $value['4'];
             $temp['email'] = $value['5'];
             $temp['sex'] = $value['6']==='男'?1:0;
-
             $res = DB::table($this->admin_table)->updateOrInsert(['username'=>$temp['username']],$temp);
-
             if ($res){
                 $num += 1;
             }
