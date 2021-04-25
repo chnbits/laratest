@@ -22,9 +22,14 @@ class SystemController extends BaseController
         $username = $request->get('username');
         $nickname = $request->get('nickname');
         $sex = $request->get('sex');
+
         $res = DB::table($this->admin_table)
-            ->join('genders','admins.sex','=','genders.sid')
-            ->where('deleted',0)
+            ->select('userId','roleIds','username','nickname','phone','admins.state','dictDataValue as sex','dictDataName as sexName','admins.createTime')
+            ->leftJoin('dict_data',function ($join){
+                $join->on('admins.sex','=','dict_data.dictDataValue')
+                    ->where('dict_data.dictId','=',1);
+            })
+            ->where('admins.deleted',0)
             ->where('username','like','%'.$username.'%')
             ->where('nickname','like','%'.$nickname.'%')
             ->where('sex','like','%'.$sex.'%')
