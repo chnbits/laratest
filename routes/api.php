@@ -4,7 +4,6 @@ use App\Http\Controllers\Admin\FileController;
 use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\MainController;
 use App\Http\Controllers\Admin\SystemController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -28,6 +27,7 @@ Route::group(['middleware'=>'auth_passport'],function (){
     Route::get('/main/menu',[MainController::class,'menus']);
 
     Route::get('/sys/loginRecord/page',[SystemController::class,'loginRecord']);
+    Route::get('/sys/operRecord/page',[SystemController::class,'oplog']);
 
     Route::get('/sys/user/page',[SystemController::class,'getUserPage']);
     Route::get('/sys/role',[SystemController::class,'getRole']);

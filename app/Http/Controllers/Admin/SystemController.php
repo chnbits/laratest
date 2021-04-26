@@ -2,9 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\RoleRequest;
-use App\Http\Requests\UserRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -15,6 +12,7 @@ class SystemController extends BaseController
     protected $menu_table = 'menus';
     protected $dict_table = 'dict';
     protected $dictData_table = 'dict_data';
+
     //查询用户
     public function getUserPage(Request $request)
     {
@@ -65,8 +63,9 @@ class SystemController extends BaseController
         return $this->res(0,'SUCCESS',$count,$users);
     }
     //添加用户
-    public function createUser(UserRequest $request)
+    public function createUser(Request $request)
     {
+        $adminId = $request->admin->userId;
         $data = $request->all();
         $data['password'] = bcrypt($request->password);
         $data['roleIds'] = json_encode($request->roleIds);
@@ -74,33 +73,41 @@ class SystemController extends BaseController
 
         $res = DB::table($this->admin_table)->insert($data);
         if (!$res){
+            $this->opRec($adminId,'用户模块','添加用户',1);
             return $this->res(1,'添加失败！');
         }
+        $this->opRec($adminId,'用户模块','添加用户',0);
         return $this->res(0,'添加成功！');
     }
     //编辑用户
-    public function editUser(UserRequest $request)
+    public function editUser(Request $request)
     {
+        $adminId = $request->admin->userId;
         $userId = $request->userId;
         $data = $request->except(['userId','roles','sid','sexName']);
         $data['updateTime'] = date('Y-m-d H:i:s',time());
 
         $res = DB::table($this->admin_table)->where('userId',$userId)->update($data);
         if (!$res){
+            $this->opRec($adminId,'用户模块','编辑用户',1);
             return $this->res(1,'更改失败！');
         }
+        $this->opRec($adminId,'用户模块','编辑用户',0);
         return $this->res(0,'更改成功！');
     }
     //改变状态
     public function changeUserState(Request $request,$userId)
     {
+        $adminId = $request->admin->userId;
         $data['state'] = $request->state;
         $data['updateTime'] = date('Y-m-d H:i:s',time());
 
         $res = DB::table($this->admin_table)->where('userId',$userId)->update($data);
         if (!$res){
+            $this->opRec($adminId,'用户模块','编辑用户状态',1);
             return $this->res(1,'更改失败！');
         }
+        $this->opRec($adminId,'用户模块','编辑用户状态',0);
         return response()->json([
             'code'=>0,
             'msg'=>'更改成功！',
@@ -110,6 +117,7 @@ class SystemController extends BaseController
     //删除用户
     public function deleteUser(Request $request,$userId)
     {
+        $adminId = $request->admin->userId;
         $userIds = $request->data;
 
         if ($userId=='batch'){
@@ -118,13 +126,16 @@ class SystemController extends BaseController
             $res = DB::table($this->admin_table)->where('userId',$userId)->update(['deleted'=>1]);
         }
         if (!$res){
+            $this->opRec($adminId,'用户模块','删除用户',1);
             return $this->res(1,'删除失败！');
         }
+        $this->opRec($adminId,'用户模块','删除用户',0);
         return $this->res(0, '删除成功！');
     }
     //导入用户
     public function importUser(Request $request)
     {
+        $adminId = $request->admin->userId;
         $importData = $request->post('data');
 
         $num = 0;
@@ -142,6 +153,7 @@ class SystemController extends BaseController
                 $num += 1;
             }
         }
+        $this->opRec($adminId,'用户模块','导入用户数据',0);
         return $this->res(0,'共导入了'.$num.'条数据',$num);
     }
     //获取全部角色
@@ -174,25 +186,31 @@ class SystemController extends BaseController
         return $this->res(0,'SUCCESS',$count,$roles);
     }
     //添加角色
-    public function createRole(RoleRequest $request)
+    public function createRole(Request $request)
     {
+        $adminId = $request->admin->userId;
         $data = $request->all();
         $data['createTime'] = date('Y-m-d H:i:s',time());
         $res = DB::table($this->role_table)->insert($data);
         if (!$res){
+            $this->opRec($adminId,'角色模块','添加角色',1);
             return $this->res(1,'添加失败！');
         }
+        $this->opRec($adminId,'角色模块','添加角色',0);
         return $this->res(0,'添加成功！',1);
     }
     //编辑角色
-    public function editRole(RoleRequest $request)
+    public function editRole(Request $request)
     {
+        $adminId = $request->admin->userId;
         $roleId = $request->roleId;
         $data = $request->except('roleId');
         $res = DB::table($this->role_table)->where('roleId',$roleId)->update($data);
         if (!$res){
+            $this->opRec($adminId,'角色模块','编辑角色',1);
             return $this->res(1, '更改失败！');
         }
+        $this->opRec($adminId,'角色模块','编辑角色',0);
         return $this->res(0,'更改成功！');
     }
     //获取角色对应菜单
@@ -215,6 +233,7 @@ class SystemController extends BaseController
     //编辑权限
     public function editRoleRight(Request $request,$roleId)
     {
+        $adminId = $request->admin->userId;
         $menuIds = $request->all();
         $updateTime = date('Y-m-d H:i:s');
         $data = array(
@@ -223,13 +242,16 @@ class SystemController extends BaseController
         );
         $res = DB::table($this->role_table)->where('roleId',$roleId)->update($data);
         if (!$res){
+            $this->opRec($adminId,'角色模块','编辑角色权限',1);
             return $this->res(1,'修改失败！');
         }
+        $this->opRec($adminId,'角色模块','编辑角色权限',0);
         return $this->res(0, '修改成功！');
     }
     //删除角色
     public function deleteRole(Request $request,$roleId)
     {
+        $adminId = $request->admin->userId;
         $roleIds = $request->data;
 
         if ($roleId=='batch'){
@@ -238,8 +260,10 @@ class SystemController extends BaseController
             $res = DB::table($this->role_table)->where('roleId',$roleId)->update(['deleted'=>1]);
         }
         if (!$res){
+            $this->opRec($adminId,'角色模块','删除角色',1);
             return $this->res(1, '删除失败！');
         }
+        $this->opRec($adminId,'角色模块','删除角色',0);
         return $this->res(0,'删除成功！');
     }
 
@@ -272,41 +296,49 @@ class SystemController extends BaseController
     //添加菜单
     public function createMenu(Request $request)
     {
+        $adminId = $request->admin->userId;
         $data = $request->all();
         $data['isShow'] = $request->post('isShow')?0:1;
         $data['createTime'] = date('Y-m-d H:i:s',time());
         $res = DB::table($this->menu_table)->insert($data);
         if (!$res){
+            $this->opRec($adminId,'菜单模块','添加菜单',1);
             return $this->res(1,'添加失败！');
         }
-        return response()->json([
-            'code'=>0,
-            'msg'=>'添加成功！',
-        ]);
+        $this->opRec($adminId,'角色模块','添加菜单',0);
+        return $this->res(0,'添加成功！');
     }
     //修改菜单
     public function editMenu(Request $request)
     {
+        $adminId = $request->admin->userId;
+
         $data = $request->except('menuId','children');
         $data['isShow'] = $request->post('isShow')?0:1;
         $data['updateTime'] = date('Y-m-d H:i:s',time());
         $menuId = $request->post('menuId');
         $res = DB::table($this->menu_table)->where('menuId',$menuId)->update($data);
         if (!$res){
+            $this->opRec($adminId,'菜单模块','修改菜单',1);
             return $this->res(1,'修改失败！');
         }
+        $this->opRec($adminId,'菜单模块','修改菜单',0);
         return $this->res(0,'修改成功！');
     }
     //删除菜单
-    public function deleteMenu($id)
+    public function deleteMenu(Request $request,$id)
     {
+        $adminId = $request->admin->userId;
+
         $table = $this->menu_table;
         $column = 'menuId';
         $res = $this->deleteData($table,$column,$id);
 
         if (!$res) {
+            $this->opRec($adminId,'菜单模块','删除菜单',1);
             return $this->res(1, '删除失败！');
         }
+        $this->opRec($adminId,'菜单模块','删除菜单',0);
         return $this->res(0, '删除成功！');
     }
 
@@ -344,6 +376,7 @@ class SystemController extends BaseController
 //    创建和更改字典
     public function createDict(Request $request)
     {
+        $adminId = $request->admin->userId;
         $baseData = $request->except('dictId');
         $createData['createTime'] = date('Y-m-d H:i:s',time());
         $updateData['updateTime'] = date('Y-m-d H:i:s',time());
@@ -353,25 +386,31 @@ class SystemController extends BaseController
         $res = DB::table($this->dict_table)->updateOrInsert(['dictId'=>$request->dictId],$data);
 
         if (!$res){
+            $this->opRec($adminId,'字典模块','添加或修改字典',1);
             return $this->res(1,'操作失败！');
         }
+        $this->opRec($adminId,'字典模块','添加或修改字典',0);
         return $this->res(0,'操作成功！');
     }
 //    删除字典
-    public function deleteDict($id)
+    public function deleteDict(Request $request,$id)
     {
+        $adminId = $request->admin->userId;
         $table = $this->dict_table;
         $column = 'dictId';
         $res = $this->deleteData($table,$column,$id);
 
         if (!$res){
+            $this->opRec($adminId,'字典模块','删除字典项',1);
             return $this->res(1,'删除失败！');
         }
+        $this->opRec($adminId,'字典模块','删除字典项',0);
         return $this->res(0,'删除成功！');
     }
 //    创建更改字典项
     public function createDictData(Request $request)
     {
+        $adminId = $request->admin->userId;
         $baseData = $request->except('dictDataId');
         $createData['createTime'] = date('Y-m-d H:i:s',time());
         $updateData['updateTime'] = date('Y-m-d H:i:s',time());
@@ -380,19 +419,24 @@ class SystemController extends BaseController
         $res = DB::table($this->dictData_table)->updateOrInsert(['dictDataId'=>$request->dictDataId],$data);
 
         if (!$res){
+            $this->opRec($adminId,'字典模块','添加或修改字典值',1);
             return $this->res(1,'操作失败！');
         }
+        $this->opRec($adminId,'字典模块','添加或修改字典值',0);
         return $this->res(0,'操作成功！');
     }
     //    删除字典项
-    public function deleteDictData($id)
+    public function deleteDictData(Request $request,$id)
     {
+        $adminId = $request->admin->userId;
         $table = $this->dictData_table;
         $column = 'dictDataId';
         $res = $this->deleteData($table,$column,$id);
         if (!$res) {
+            $this->opRec($adminId,'字典模块','删除字典项值',1);
             return $this->res(1,'删除失败！');
         }
+        $this->opRec($adminId,'字典模块','删除字典项值',0);
         return $this->res(0,'删除成功！');
     }
 
@@ -406,13 +450,40 @@ class SystemController extends BaseController
     public function loginRecord(Request $request)
     {
         $limit = $request->limit;
+        $username = $request->username;
+        $start = $request->createTimeStart;
+        $end = $request->createTimeEnd;
         $loginRecord = DB::table('login_record')
             ->join('admins','uid','=','userId')
             ->select(['username','nickname','ip','device','operType','login_record.createTime'])
+            ->where('admins.username','like','%'.$username.'%')
+            ->whereBetween('login_record.createTime',[$start,$end])
+            ->orderBy('login_record.createTime','DESC')
             ->paginate($limit);
 
         $count = $loginRecord->total();
 
         return $this->res(0,'SUCCESS',$count,$loginRecord->items());
+    }
+    //操作记录
+    public function oplog(Request $request)
+    {
+        $limit = $request->limit;
+        $username = $request->username;
+        $model = $request->model;
+        $start = $request->createTimeStart;
+        $end = $request->createTimeEnd;
+        $operRecord = DB::table('oper_record')
+            ->select(['username','nickname','ip','url','requestMethod','model','description','param','oper_record.state','oper_record.createTime'])
+            ->join('admins','oper_record.userId','=','admins.userId')
+            ->where('admins.username','like','%'.$username.'%')
+            ->where('model','like','%'.$model.'%')
+            ->whereBetween('oper_record.createTime',[$start,$end])
+            ->orderBy('oper_record.createTime','DESC')
+            ->paginate($limit);
+
+        $count = $operRecord->total();
+
+        return $this->res(0,'SUCCESS',$count,$operRecord->items());
     }
 }
