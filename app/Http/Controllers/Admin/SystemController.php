@@ -473,6 +473,7 @@ class SystemController extends BaseController
         $model = $request->model;
         $start = $request->createTimeStart;
         $end = $request->createTimeEnd;
+
         $operRecord = DB::table('oper_record')
             ->select(['username','nickname','ip','url','requestMethod','model','description','param','oper_record.state','oper_record.createTime'])
             ->join('admins','oper_record.userId','=','admins.userId')

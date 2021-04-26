@@ -33,7 +33,7 @@ class BaseController extends Controller
             'model'=>$model,
             'description'=>$description,
             'state'=>$state,
-            'updateTime'=>date('Y-m-d H:i:s',time())
+            'createTime'=>date('Y-m-d H:i:s',time())
         );
         Oper_record::index($parms);
     }
