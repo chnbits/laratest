@@ -40,30 +40,36 @@ class BaseController extends Controller
         );
         Oper_record::index($parms);
     }
-
+    //查询数据
+    public function getData($table,$column,$value,$key='*')
+    {
+        $res = DB::table($table)->where($column,$value)->get($key);
+        return $res;
+    }
     //插入数据
     public function insertData($table,$data)
     {
+        $data['createTime'] = date('Y-m-d H:i:s',time());
         $res = DB::table($table)->insert($data);
         return $res;
     }
     //更新数据
-    public function updateData($table,$column,$id,$data)
+    public function updateData($table,$column,$value,$data)
     {
         $data['updateTime'] = date('Y-m-d H:i:s', time());
-        $res = DB::table($table)->where($column, $id)->update($data);
+        $res = DB::table($table)->where($column, $value)->update($data);
         return $res;
     }
     //删除单个数据
-    public function deleteData($table,$column,$id)
+    public function deleteData($table,$column,$value)
     {
-        $res = DB::table($table)->where($column, $id)->update(['deleted' => 1, 'updateTime' => date('Y-m-d H:i:s', time())]);
+        $res = DB::table($table)->where($column, $value)->update(['deleted' => 1, 'updateTime' => date('Y-m-d H:i:s', time())]);
         return $res;
     }
     //删除多行数据
-    public function deletePatch($table,$column,$ids)
+    public function deletePatch($table,$column,$values)
     {
-        $res = DB::table($table)->whereIn($column,$ids)->update(['deleted'=>1,'updateTime' => date('Y-m-d H:i:s', time())]);
+        $res = DB::table($table)->whereIn($column,$values)->update(['deleted'=>1,'updateTime' => date('Y-m-d H:i:s', time())]);
         return $res;
     }
 

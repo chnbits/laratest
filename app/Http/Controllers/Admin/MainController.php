@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class MainController extends BaseController
@@ -13,10 +11,7 @@ class MainController extends BaseController
     {
         $user = $request->admin;
         if (!$user){
-            return response()->json([
-                'code'=>1,
-                'msg'=>'还未登录！'
-            ]);
+            return $this->res(1,'还未登录！');
         }
         $userInfo = json_decode($user,true);
         $roleIds_arr = json_decode($userInfo['roleIds']);
@@ -30,13 +25,8 @@ class MainController extends BaseController
         $menus = DB::table('menus')->whereIn('menuId',$menuIds_arr)->get()->all();
         $userInfo['roles'] = $roles;
         $userInfo['authorities'] = $menus;
-        $data = array(
-            'code'=>0,
-            'msg'=>'Success',
-            'data'=>$userInfo,
-        );
 
-        return response()->json($data);
+        return $this->res(0,'SUCCESS!','',$userInfo);
     }
     public function menus(Request $request)
     {
@@ -55,10 +45,7 @@ class MainController extends BaseController
         $res = DB::table('menus')->where('isShow',0)->where('menuType',0)->whereIn('menuId',$menuIds_arr)->get()->all();
 
         if (!$res){
-            return response()->json([
-                'code'=>1,
-                'msg'=>'没有找到菜单！'
-            ]);
+            return $this->res(1,'没有找到菜单！');
         }
         $temp = array();
         foreach($res as $value){
@@ -72,10 +59,6 @@ class MainController extends BaseController
                 $data[] = $temp[$value->menuId];
             }
         }
-        return response()->json([
-            'code'=>0,
-            'msg'=>'SUCCESS!',
-            'data'=>$data
-        ]);
+        return $this->res(0,'SUCCESS!','',$data);
     }
 }

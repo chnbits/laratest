@@ -48,8 +48,8 @@ Route::group(['middleware'=>'auth_passport'],function (){
     Route::get('/sys/role/menu',[RoleController::class,'getRoleMenu']);
     Route::put('/sys/role',[RoleController::class,'editRole']);
     Route::post('/sys/role',[RoleController::class,'createRole']);
-    Route::put('/sys/role/{id}',[RoleController::class,'deleteRole']);
     Route::put('/sys/role/batch',[RoleController::class,'deleteRole']);
+    Route::put('/sys/role/{id}',[RoleController::class,'deleteRole']);
     Route::put('/sys/role/menu/{id}',[RoleController::class,'editRoleRight']);
 
     Route::get('/sys/menu',[MenuController::class,'getMenu']);

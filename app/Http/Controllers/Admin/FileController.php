@@ -2,21 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 
-class FileController extends Controller
+class FileController extends BaseController
 {
     public function captcha()
     {
         $captcha = app('captcha')->create('flat',true);
 
-        $data = array(
-            'code'=>0,
-            'msg'=>'SUCCESS',
-            'data'=>$captcha
-        );
-
-        return json_encode($data);
+        return $this->res(0,'SUCCESS','',$captcha);
     }
 }

@@ -39,8 +39,8 @@ class MenuController extends BaseController
         $adminId = $request->admin->userId;
         $data = $request->all();
         $data['isShow'] = $request->post('isShow')?0:1;
-        $data['createTime'] = date('Y-m-d H:i:s',time());
-        $res = DB::table($this->menu_table)->insert($data);
+
+        $res = $this->insertData($this->menu_table,$data);
         if (!$res){
             $this->opRec($adminId,'菜单模块','添加菜单',1);
             return $this->res(1,'添加失败！');
@@ -55,9 +55,9 @@ class MenuController extends BaseController
 
         $data = $request->except('menuId','children');
         $data['isShow'] = $request->post('isShow')?0:1;
-        $data['updateTime'] = date('Y-m-d H:i:s',time());
         $menuId = $request->post('menuId');
-        $res = DB::table($this->menu_table)->where('menuId',$menuId)->update($data);
+
+        $res = $this->updateData($this->menu_table,'menuId',$menuId,$data);
         if (!$res){
             $this->opRec($adminId,'菜单模块','修改菜单',1);
             return $this->res(1,'修改失败！');

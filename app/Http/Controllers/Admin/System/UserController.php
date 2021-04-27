@@ -34,7 +34,7 @@ class UserController extends BaseController
             return $this->res(1,'没有数据！');
         }
 
-        $roles = DB::table($this->role_table)->get(['roleId','roleName'])->all();
+        $roles = $this->getData($this->role_table,'deleted',0,['roleId','roleName'])->all();
         $user_data = array();
         foreach ($users as $value)
         {
@@ -153,7 +153,7 @@ class UserController extends BaseController
     //获取全部角色
     public function getRole()
     {
-        $roles = DB::table($this->role_table)->where('deleted','0')->get()->all();
+        $roles = $this->getData($this->role_table,'deleted','0',['roleId','roleName'])->all();
         if (!$roles){
             return $this->res(1,'没有数据！');
         }

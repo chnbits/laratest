@@ -13,7 +13,7 @@ class DictController extends BaseController
     {
         $dict = DB::table($this->dict_table)
             ->where('deleted',0)
-            ->orderBy('sortNumber','asc')
+            ->orderBy('sortNumber','ASC')
             ->get()->all();
         if (!$dict){
             return $this->res(1,'暂时没有数据！');
@@ -29,7 +29,7 @@ class DictController extends BaseController
         $res = DB::table($this->dictData_table)
             ->where('dictId',$dictId)
             ->where('deleted',0)
-            ->orderBy('sortNumber','asc')
+            ->orderBy('sortNumber','ASC')
             ->paginate($limit);
         $dictData = $res->items();
         $count = $res->total();

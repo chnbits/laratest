@@ -33,8 +33,9 @@ class RoleController extends BaseController
     {
         $adminId = $request->admin->userId;
         $data = $request->all();
-        $data['createTime'] = date('Y-m-d H:i:s',time());
-        $res = DB::table($this->role_table)->insert($data);
+
+        $res = $this->insertData($this->role_table,$data);
+
         if (!$res){
             $this->opRec($adminId,'角色模块','添加角色',1);
             return $this->res(1,'添加失败！');
@@ -48,7 +49,9 @@ class RoleController extends BaseController
         $adminId = $request->admin->userId;
         $roleId = $request->roleId;
         $data = $request->except('roleId');
-        $res = DB::table($this->role_table)->where('roleId',$roleId)->update($data);
+
+        $res = $this->updateData($this->role_table,'roleId',$roleId,$data);
+
         if (!$res){
             $this->opRec($adminId,'角色模块','编辑角色',1);
             return $this->res(1, '更改失败！');
@@ -60,9 +63,10 @@ class RoleController extends BaseController
     public function getRoleMenu(Request $request)
     {
         $roleId = $request->roleId;
-        $role = DB::table($this->role_table)->where('roleId',$roleId)->get('roleMenu')->first();
+        $role = $this->getData($this->role_table,'roleId',$roleId,'roleMenu')->first();
         $roleMenu_arr = json_decode($role->roleMenu,true);
-        $res = DB::table($this->menu_table)->get()->all();
+
+        $res = $this->getData($this->menu_table,'deleted',0,['title','menuId','parentId'])->all();
 
         foreach ($res as $value)
         {
@@ -78,12 +82,8 @@ class RoleController extends BaseController
     {
         $adminId = $request->admin->userId;
         $menuIds = $request->all();
-        $updateTime = date('Y-m-d H:i:s');
-        $data = array(
-            'roleMenu'=>json_encode($menuIds),
-            'updateTime'=>$updateTime
-        );
-        $res = DB::table($this->role_table)->where('roleId',$roleId)->update($data);
+        $data['roleMenu'] = json_encode($menuIds);
+        $res = $this->updateData($this->role_table,'roleId',$roleId,$data);
         if (!$res){
             $this->opRec($adminId,'角色模块','编辑角色权限',1);
             return $this->res(1,'修改失败！');
@@ -92,15 +92,15 @@ class RoleController extends BaseController
         return $this->res(0, '修改成功！');
     }
     //删除角色
-    public function deleteRole(Request $request,$roleId)
+    public function deleteRole(Request $request,$roleId='')
     {
         $adminId = $request->admin->userId;
         $roleIds = $request->data;
 
-        if ($roleId=='batch'){
-            $res = DB::table($this->role_table)->whereIn('roleId',$roleIds)->update(['deleted'=>1]);
+        if (!empty($roleIds)){
+            $res = $this->deletePatch($this->role_table,'roleId',$roleIds);
         }else{
-            $res = DB::table($this->role_table)->where('roleId',$roleId)->update(['deleted'=>1]);
+            $res = $this->deleteData($this->role_table,'roleId',$roleId);
         }
         if (!$res){
             $this->opRec($adminId,'角色模块','删除角色',1);
