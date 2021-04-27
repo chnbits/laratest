@@ -63,6 +63,7 @@ class DictController extends BaseController
         $adminId = $request->admin->userId;
         $table = $this->dict_table;
         $column = 'dictId';
+
         $res = $this->deleteData($table,$column,$id);
 
         if (!$res){
