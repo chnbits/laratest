@@ -15,8 +15,9 @@ class UserController extends BaseController
         $username = $request->get('username');
         $nickname = $request->get('nickname');
         $sex = $request->get('sex');
+        $organizationId = $request->get('organizationId');
 
-        $res = DB::table($this->admin_table)
+        $query = DB::table($this->admin_table)
             ->select('userId','roleIds','username','nickname','phone','admins.state','dictDataValue as sex','dictDataName as sexName','admins.createTime')
             ->leftJoin('dict_data',function ($join){
                 $join->on('admins.sex','=','dict_data.dictDataValue')
@@ -25,8 +26,13 @@ class UserController extends BaseController
             ->where('admins.deleted',0)
             ->where('username','like','%'.$username.'%')
             ->where('nickname','like','%'.$nickname.'%')
-            ->where('sex','like','%'.$sex.'%')
-            ->paginate($limit);
+            ->where('sex','like','%'.$sex.'%');
+        if (empty($organizationId)) {
+            $res = $query->paginate($limit);
+        }else{
+            $res = $query->where('admins.organizationId',$organizationId)
+                ->paginate($limit);
+        }
 
         $users = $res->items();
         $count = $res->total();

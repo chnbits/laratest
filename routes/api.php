@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\MainController;
 use App\Http\Controllers\Admin\System\DictController;
 use App\Http\Controllers\Admin\System\LogController;
 use App\Http\Controllers\Admin\System\MenuController;
+use App\Http\Controllers\Admin\System\OrganizeController;
 use App\Http\Controllers\Admin\System\RoleController;
 use App\Http\Controllers\Admin\System\UserController;
 use App\Http\Controllers\Admin\SystemController;
@@ -64,4 +65,9 @@ Route::group(['middleware'=>'auth_passport'],function (){
     Route::post('/sys/dictdata',[DictController::class,'createDictData']);
     Route::put('/sys/dictdata',[DictController::class,'createDictData']);
     Route::put('/sys/dictdata/{id}',[DictController::class,'deleteDictData']);
+
+    Route::get('/sys/organization',[OrganizeController::class,'getOrganize']);
+    Route::get('/sys/dictdata',[OrganizeController::class,'getDictData']);
+    Route::post('/sys/organization',[OrganizeController::class,'createOrganize']);
+    Route::put('/sys/organization',[OrganizeController::class,'createOrganize']);
 });

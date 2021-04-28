@@ -38,7 +38,7 @@ class DictController extends BaseController
         }
         return $this->res(0,'SUCCESS',$count,$dictData);
     }
-//    创建和更改字典
+    //创建和更改字典
     public function createDict(Request $request)
     {
         $adminId = $request->admin->userId;

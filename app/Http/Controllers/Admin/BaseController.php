@@ -15,6 +15,7 @@ class BaseController extends Controller
     protected $menu_table = 'menus';
     protected $dict_table = 'dict';
     protected $dictData_table = 'dict_data';
+    protected $org_table = 'organization';
 
     public function __construct(Request $request)
     {
