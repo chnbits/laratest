@@ -100,9 +100,9 @@ class UserController extends BaseController
     public function changeUserState(Request $request,$userId)
     {
         $adminId = $request->admin->userId;
-        $data['state'] = $request->state;
+        $state = $request->input('state');
 
-        $res = $this->updateData($this->admin_table,'userId',$userId,$data);
+        $res = $this->updateData($this->admin_table,'userId',$userId,['state'=>$state]);
         if (!$res){
             $this->opRec($adminId,'用户模块','编辑用户状态',1);
             return $this->res(1,'更改失败！');
@@ -111,7 +111,7 @@ class UserController extends BaseController
         return response()->json([
             'code'=>0,
             'msg'=>'更改成功！',
-            'state'=>$data['state']
+//            'state'=>$data['state']
         ]);
     }
     //删除用户

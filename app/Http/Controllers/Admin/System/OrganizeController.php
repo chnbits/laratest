@@ -37,9 +37,10 @@ class OrganizeController extends BaseController
     public function createOrganize(Request $request)
     {
         $adminId = $request->admin->userId;
-        $baseData = $request->except('organizationId');
+        $baseData = $request->except('organizationId','parentName','children');
         $createData['createTime'] = date('Y-m-d H:i:s',time());
         $updateData['updateTime'] = date('Y-m-d H:i:s',time());
+        $baseData['parentId'] = $request->post('parentId',0);
 
         $data = $request->post('dictId')?array_merge($baseData,$updateData):array_merge($baseData,$createData);
 
