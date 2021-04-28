@@ -47,10 +47,23 @@ class OrganizeController extends BaseController
         $res = DB::table($this->org_table)->updateOrInsert(['organizationId'=>$request->organizationId],$data);
 
         if (!$res){
-            $this->opRec($adminId,'字典模块','添加或修改字典',1);
+            $this->opRec($adminId,'组织模块','添加或修改组织',1);
             return $this->res(1,'操作失败！');
         }
-        $this->opRec($adminId,'字典模块','添加或修改字典',0);
+        $this->opRec($adminId,'组织模块','添加或修改组织',0);
         return $this->res(0,'操作成功！');
+    }
+    //删除机构
+    public function deleteOrganize(Request $request,$organizationId)
+    {
+        $adminId = $request->admin->userId;
+
+        $res = $this->deleteData($this->org_table,'organizationId',$organizationId);
+        if (!$res) {
+            $this->opRec($adminId,'组织模块','删除组织',1);
+            return $this->res(1,'删除失败！');
+        }
+        $this->opRec($adminId,'组织模块','删除组织',0);
+        return $this->res(0,'删除成功！');
     }
 }

@@ -70,4 +70,5 @@ Route::group(['middleware'=>'auth_passport'],function (){
     Route::get('/sys/dictdata',[OrganizeController::class,'getDictData']);
     Route::post('/sys/organization',[OrganizeController::class,'createOrganize']);
     Route::put('/sys/organization',[OrganizeController::class,'createOrganize']);
+    Route::put('/sys/organization/{id}',[OrganizeController::class,'deleteOrganize']);
 });

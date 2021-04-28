@@ -22,7 +22,7 @@ class BaseController extends Controller
         $this->ip = $request->ip();
         $this->method = $request->method();
         $this->path = $request->path();
-        $this->parm = json_encode($request->all());
+        $this->parm = json_encode($request->except('children'));
     }
 
     //操作记录

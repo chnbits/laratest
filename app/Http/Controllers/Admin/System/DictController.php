@@ -95,9 +95,7 @@ class DictController extends BaseController
     public function deleteDictData(Request $request,$id)
     {
         $adminId = $request->admin->userId;
-        $table = $this->dictData_table;
-        $column = 'dictDataId';
-        $res = $this->deleteData($table,$column,$id);
+        $res = $this->deleteData($this->dictData_table,'dictDataId',$id);
         if (!$res) {
             $this->opRec($adminId,'字典模块','删除字典项值',1);
             return $this->res(1,'删除失败！');
@@ -105,5 +103,4 @@ class DictController extends BaseController
         $this->opRec($adminId,'字典模块','删除字典项值',0);
         return $this->res(0,'删除成功！');
     }
-
 }
