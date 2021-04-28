@@ -42,7 +42,7 @@ class MainController extends BaseController
         }
         $menuIds_arr = array_unique($temp);
 
-        $res = DB::table('menus')->where('isShow',0)->where('menuType',0)->whereIn('menuId',$menuIds_arr)->get()->all();
+        $res = DB::table('menus')->where('hide',0)->where('menuType',0)->whereIn('menuId',$menuIds_arr)->get()->all();
 
         if (!$res){
             return $this->res(1,'没有找到菜单！');

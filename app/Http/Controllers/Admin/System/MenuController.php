@@ -39,6 +39,7 @@ class MenuController extends BaseController
         $adminId = $request->admin->userId;
         $data = $request->all();
         $data['isShow'] = $request->post('isShow')?0:1;
+        $data['uid'] = $adminId;
 
         $res = $this->insertData($this->menu_table,$data);
         if (!$res){
@@ -53,8 +54,8 @@ class MenuController extends BaseController
     {
         $adminId = $request->admin->userId;
 
-        $data = $request->except('menuId','children');
-        $data['isShow'] = $request->post('isShow')?0:1;
+        $data = $request->except('isShow','menuId','children');
+//        $data['isShow'] = $request->post('isShow')?0:1;
         $menuId = $request->post('menuId');
 
         $res = $this->updateData($this->menu_table,'menuId',$menuId,$data);
