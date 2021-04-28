@@ -108,11 +108,7 @@ class UserController extends BaseController
             return $this->res(1,'更改失败！');
         }
         $this->opRec($adminId,'用户模块','编辑用户状态',0);
-        return response()->json([
-            'code'=>0,
-            'msg'=>'更改成功！',
-//            'state'=>$data['state']
-        ]);
+        return $this->res(0,'更改成功！');
     }
     //删除用户
     public function deleteUser(Request $request,$userId)
