@@ -25,6 +25,7 @@ class MainController extends BaseController
         $menus = DB::table('menus')->whereIn('menuId',$menuIds_arr)->get()->all();
         $userInfo['roles'] = $roles;
         $userInfo['authorities'] = $menus;
+        unset($userInfo['password']);
 
         return $this->res(0,'SUCCESS!','',$userInfo);
     }
