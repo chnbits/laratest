@@ -31,6 +31,7 @@ Route::post('/login',[LoginController::class,'login']);
 Route::group(['middleware'=>'auth_passport'],function (){
     Route::get('/main/user',[MainController::class,'getAdmin']);
     Route::get('/main/menu',[MainController::class,'menus']);
+    Route::put('/main/profile/{id}',[MainController::class,'profile']);
 
     Route::get('/sys/loginRecord/page',[LogController::class,'loginRecord']);
     Route::get('/sys/operRecord/page',[LogController::class,'oplog']);
