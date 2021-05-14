@@ -24,7 +24,6 @@ class BaseController extends Controller
         $this->path = $request->path();
         $this->parm = json_encode($request->except('children'));
     }
-
     //操作记录
     public function opRec($userId,$model,$description,$state='0')
     {

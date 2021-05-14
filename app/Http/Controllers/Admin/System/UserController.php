@@ -18,12 +18,8 @@ class UserController extends BaseController
         $organizationId = $request->get('organizationId');
 
         $query = DB::table($this->admin_table)
-            ->select('userId','roleIds','username','nickname','phone','admins.state','dictDataValue as sex','dictDataName as sexName','admins.createTime')
-            ->leftJoin('dict_data',function ($join){
-                $join->on('admins.sex','=','dict_data.dictDataValue')
-                    ->where('dict_data.dictId','=',1);
-            })
-            ->where('admins.deleted',0)
+            ->select('userId','roleIds','username','nickname','phone','state','sex','createTime')
+            ->where('deleted',0)
             ->where('username','like','%'.$username.'%')
             ->where('nickname','like','%'.$nickname.'%')
             ->where('sex','like','%'.$sex.'%');
@@ -33,13 +29,11 @@ class UserController extends BaseController
             $res = $query->where('admins.organizationId',$organizationId)
                 ->paginate($limit);
         }
-
         $users = $res->items();
         $count = $res->total();
         if ($count == 0){
             return $this->res(1,'没有数据！');
         }
-
         $roles = $this->getData($this->role_table,'deleted',0,['roleId','roleName'])->all();
         $user_data = array();
         foreach ($users as $value)
@@ -52,6 +46,14 @@ class UserController extends BaseController
             $role_data[$value->roleId] = $value;
         }
 
+        $dictId = $this->getData($this->dict_table,'dictCode','sex','dictId')->first();
+        $sex_arr = $this->getData($this->dictData_table,'dictId',$dictId->dictId)->all();
+
+        $sex = array();
+        foreach ($sex_arr as $val){
+            $sex[$val->dictDataValue] = $val;
+        }
+
         foreach ($user_data as $value)
         {
             $roleId_arr = json_decode($value->roleIds,true);
@@ -59,6 +61,7 @@ class UserController extends BaseController
             {
                 $user_data[$value->userId]->roles[] = $role_data[$v];
             }
+            $user_data[$value->userId]->sexName = $sex[$value->sex]->dictDataName;
         }
 
         return $this->res(0,'SUCCESS',$count,$users);
