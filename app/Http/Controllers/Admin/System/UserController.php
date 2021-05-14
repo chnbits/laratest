@@ -70,7 +70,7 @@ class UserController extends BaseController
     public function createUser(Request $request)
     {
         $adminId = $request->admin->userId;
-        $data = $request->all();
+        $data = $request->only('username','nickname','sex','phone','introduction','email','roleIds');
         $data['password'] = bcrypt($request->password);
         $data['roleIds'] = json_encode($request->roleIds);
         $data['createTime'] = date('Y-m-d H:i:s',time());
@@ -78,10 +78,10 @@ class UserController extends BaseController
         $res = $this->insertData($this->admin_table,$data);
 
         if (!$res){
-            $this->opRec($adminId,'用户模块','添加用户',1);
+            $this->opRec($adminId,'用户模块',$data,'添加用户',1);
             return $this->res(1,'添加失败！');
         }
-        $this->opRec($adminId,'用户模块','添加用户',0);
+        $this->opRec($adminId,'用户模块',$data,'添加用户',0);
         return $this->res(0,'添加成功！');
     }
     //编辑用户

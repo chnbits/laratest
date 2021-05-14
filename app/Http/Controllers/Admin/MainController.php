@@ -68,6 +68,14 @@ class MainController extends BaseController
     }
     public function profile(Request $request)
     {
-
+        $userId = $request->input('userId');
+        $data = $request->only('username','sex','phone','email','introduction');
+        $res = $this->updateData($this->admin_table,'userId',$userId,$data);
+        if (!$res){
+            $this->opRec($userId,'修改资料',$data,'修改个人资料',1);
+            return $this->res(1,'修改失败！');
+        }
+        $this->opRec($userId,'修改资料',$data,'修改个人资料',0);
+        return $this->res(0,'修改成功！');
     }
 }
