@@ -18,7 +18,7 @@ class UserController extends BaseController
         $organizationId = $request->get('organizationId');
 
         $query = DB::table($this->admin_table)
-            ->select('userId','roleIds','username','nickname','phone','state','sex','createTime')
+            ->select('userId','roleIds','username','nickname','phone','email','state','sex','createTime')
             ->where('deleted',0)
             ->where('username','like','%'.$username.'%')
             ->where('nickname','like','%'.$nickname.'%')
@@ -76,7 +76,6 @@ class UserController extends BaseController
         $data['createTime'] = date('Y-m-d H:i:s',time());
 
         $res = $this->insertData($this->admin_table,$data);
-
         if (!$res){
             $this->opRec($adminId,'用户模块',$data,'添加用户',1);
             return $this->res(1,'添加失败！');
@@ -88,47 +87,50 @@ class UserController extends BaseController
     public function editUser(Request $request)
     {
         $adminId = $request->admin->userId;
-        $userId = $request->userId;
-        $data = $request->except(['userId','roles','sid','sexName']);
+        $userId = $request->input('userId');
+        $data = $request->only(['username','nickname','sex','roleIds','phone','email','introduction']);
 
         $res = $this->updateData($this->admin_table,'userId',$userId,$data);
         if (!$res){
-            $this->opRec($adminId,'用户模块','编辑用户',1);
+            $this->opRec($adminId,'用户模块',$data,'编辑用户',1);
             return $this->res(1,'更改失败！');
         }
-        $this->opRec($adminId,'用户模块','编辑用户',0);
+        $this->opRec($adminId,'用户模块',$data,'编辑用户',0);
         return $this->res(0,'更改成功！');
     }
     //改变状态
     public function changeUserState(Request $request,$userId)
     {
         $adminId = $request->admin->userId;
-        $state = $request->input('state');
+        $parm['userId'] = $userId;
+        $parm['state'] = $request->input('state');
 
-        $res = $this->updateData($this->admin_table,'userId',$userId,['state'=>$state]);
+        $res = $this->updateData($this->admin_table,'userId',$userId,['state'=>$parm['state']]);
         if (!$res){
-            $this->opRec($adminId,'用户模块','编辑用户状态',1);
+            $this->opRec($adminId,'用户模块',$parm,'编辑用户状态',1);
             return $this->res(1,'更改失败！');
         }
-        $this->opRec($adminId,'用户模块','编辑用户状态',0);
+        $this->opRec($adminId,'用户模块',$parm,'编辑用户状态',0);
         return $this->res(0,'更改成功！');
     }
     //删除用户
-    public function deleteUser(Request $request,$userId)
+    public function deleteUser(Request $request,$userId='')
     {
         $adminId = $request->admin->userId;
-        $userIds = $request->data;
+        $userIds = $request->input('data');
 
-        if ($userId=='batch'){
+        if (!$userId){
             $res = $this->deletePatch($this->admin_table,'userId',$userIds);
+            $parm = $userIds;
         }else{
             $res = $this->deleteData($this->admin_table,'userId',$userId);
+            $parm = $userId;
         }
         if (!$res){
-            $this->opRec($adminId,'用户模块','删除用户',1);
+            $this->opRec($adminId,'用户模块',$parm,'删除用户',1);
             return $this->res(1,'删除失败！');
         }
-        $this->opRec($adminId,'用户模块','删除用户',0);
+        $this->opRec($adminId,'用户模块',$parm,'删除用户',0);
         return $this->res(0, '删除成功！');
     }
     //导入用户
@@ -152,7 +154,7 @@ class UserController extends BaseController
                 $num += 1;
             }
         }
-        $this->opRec($adminId,'用户模块','导入用户数据',0);
+        $this->opRec($adminId,'用户模块','','导入用户数据',0);
         return $this->res(0,'共导入了'.$num.'条数据',$num);
     }
     //获取全部角色

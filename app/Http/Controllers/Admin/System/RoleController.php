@@ -32,15 +32,15 @@ class RoleController extends BaseController
     public function createRole(Request $request)
     {
         $adminId = $request->admin->userId;
-        $data = $request->all();
+        $data = $request->only('roleName','roleCode','comments');
 
         $res = $this->insertData($this->role_table,$data);
 
         if (!$res){
-            $this->opRec($adminId,'角色模块','添加角色',1);
+            $this->opRec($adminId,'角色模块',$data,'添加角色',1);
             return $this->res(1,'添加失败！');
         }
-        $this->opRec($adminId,'角色模块','添加角色',0);
+        $this->opRec($adminId,'角色模块',$data,'添加角色',0);
         return $this->res(0,'添加成功！',1);
     }
     //编辑角色
@@ -48,15 +48,15 @@ class RoleController extends BaseController
     {
         $adminId = $request->admin->userId;
         $roleId = $request->roleId;
-        $data = $request->except('roleId');
+        $data = $request->only('roleName','roleCode','comments');
 
         $res = $this->updateData($this->role_table,'roleId',$roleId,$data);
 
         if (!$res){
-            $this->opRec($adminId,'角色模块','编辑角色',1);
+            $this->opRec($adminId,'角色模块',$data,'编辑角色',1);
             return $this->res(1, '更改失败！');
         }
-        $this->opRec($adminId,'角色模块','编辑角色',0);
+        $this->opRec($adminId,'角色模块',$data,'编辑角色',0);
         return $this->res(0,'更改成功！');
     }
     //获取角色对应菜单
@@ -82,13 +82,15 @@ class RoleController extends BaseController
     {
         $adminId = $request->admin->userId;
         $menuIds = $request->all();
-        $data['roleMenu'] = json_encode($menuIds);
-        $res = $this->updateData($this->role_table,'roleId',$roleId,$data);
+        $parm['roleId'] = $roleId;
+        $parm['roleMenu'] = json_encode($menuIds);
+
+        $res = $this->updateData($this->role_table,'roleId',$roleId,$parm['roleMenu']);
         if (!$res){
-            $this->opRec($adminId,'角色模块','编辑角色权限',1);
+            $this->opRec($adminId,'角色模块',$parm,'编辑角色权限',1);
             return $this->res(1,'修改失败！');
         }
-        $this->opRec($adminId,'角色模块','编辑角色权限',0);
+        $this->opRec($adminId,'角色模块',$parm,'编辑角色权限',0);
         return $this->res(0, '修改成功！');
     }
     //删除角色
@@ -99,14 +101,16 @@ class RoleController extends BaseController
 
         if (!empty($roleIds)){
             $res = $this->deletePatch($this->role_table,'roleId',$roleIds);
+            $data = $roleIds;
         }else{
             $res = $this->deleteData($this->role_table,'roleId',$roleId);
+            $data = $roleId;
         }
         if (!$res){
-            $this->opRec($adminId,'角色模块','删除角色',1);
+            $this->opRec($adminId,'角色模块',$data,'删除角色',1);
             return $this->res(1, '删除失败！');
         }
-        $this->opRec($adminId,'角色模块','删除角色',0);
+        $this->opRec($adminId,'角色模块',$data,'删除角色',0);
         return $this->res(0,'删除成功！');
     }
 }

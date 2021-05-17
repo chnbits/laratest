@@ -43,10 +43,10 @@ class MenuController extends BaseController
 
         $res = $this->insertData($this->menu_table,$data);
         if (!$res){
-            $this->opRec($adminId,'菜单模块','添加菜单',1);
+            $this->opRec($adminId,'菜单模块',$data,'添加菜单',1);
             return $this->res(1,'添加失败！');
         }
-        $this->opRec($adminId,'角色模块','添加菜单',0);
+        $this->opRec($adminId,'角色模块',$data,'添加菜单',0);
         return $this->res(0,'添加成功！');
     }
     //修改菜单
@@ -55,15 +55,14 @@ class MenuController extends BaseController
         $adminId = $request->admin->userId;
 
         $data = $request->except('isShow','menuId','children');
-//        $data['isShow'] = $request->post('isShow')?0:1;
         $menuId = $request->post('menuId');
 
         $res = $this->updateData($this->menu_table,'menuId',$menuId,$data);
         if (!$res){
-            $this->opRec($adminId,'菜单模块','修改菜单',1);
+            $this->opRec($adminId,'菜单模块',$data,'修改菜单',1);
             return $this->res(1,'修改失败！');
         }
-        $this->opRec($adminId,'菜单模块','修改菜单',0);
+        $this->opRec($adminId,'菜单模块',$data,'修改菜单',0);
         return $this->res(0,'修改成功！');
     }
     //删除菜单
@@ -76,10 +75,10 @@ class MenuController extends BaseController
         $res = $this->deleteData($table,$column,$id);
 
         if (!$res) {
-            $this->opRec($adminId,'菜单模块','删除菜单',1);
+            $this->opRec($adminId,'菜单模块',$id,'删除菜单',1);
             return $this->res(1, '删除失败！');
         }
-        $this->opRec($adminId,'菜单模块','删除菜单',0);
+        $this->opRec($adminId,'菜单模块',$id,'删除菜单',0);
         return $this->res(0, '删除成功！');
     }
 }

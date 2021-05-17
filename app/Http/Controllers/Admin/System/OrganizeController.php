@@ -47,10 +47,10 @@ class OrganizeController extends BaseController
         $res = DB::table($this->org_table)->updateOrInsert(['organizationId'=>$request->organizationId],$data);
 
         if (!$res){
-            $this->opRec($adminId,'组织模块','添加或修改组织',1);
+            $this->opRec($adminId,'组织模块',$data,'添加或修改组织',1);
             return $this->res(1,'操作失败！');
         }
-        $this->opRec($adminId,'组织模块','添加或修改组织',0);
+        $this->opRec($adminId,'组织模块',$data,'添加或修改组织',0);
         return $this->res(0,'操作成功！');
     }
     //删除机构
@@ -60,10 +60,10 @@ class OrganizeController extends BaseController
 
         $res = $this->deleteData($this->org_table,'organizationId',$organizationId);
         if (!$res) {
-            $this->opRec($adminId,'组织模块','删除组织',1);
+            $this->opRec($adminId,'组织模块',$organizationId,'删除组织',1);
             return $this->res(1,'删除失败！');
         }
-        $this->opRec($adminId,'组织模块','删除组织',0);
+        $this->opRec($adminId,'组织模块',$organizationId,'删除组织',0);
         return $this->res(0,'删除成功！');
     }
 }

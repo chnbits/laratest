@@ -51,10 +51,10 @@ class DictController extends BaseController
         $res = DB::table($this->dict_table)->updateOrInsert(['dictId'=>$request->dictId],$data);
 
         if (!$res){
-            $this->opRec($adminId,'字典模块','添加或修改字典',1);
+            $this->opRec($adminId,'字典模块',$data,'添加或修改字典',1);
             return $this->res(1,'操作失败！');
         }
-        $this->opRec($adminId,'字典模块','添加或修改字典',0);
+        $this->opRec($adminId,'字典模块',$data,'添加或修改字典',0);
         return $this->res(0,'操作成功！');
     }
 //    删除字典
@@ -67,10 +67,10 @@ class DictController extends BaseController
         $res = $this->deleteData($table,$column,$id);
 
         if (!$res){
-            $this->opRec($adminId,'字典模块','删除字典项',1);
+            $this->opRec($adminId,'字典模块',$id,'删除字典项',1);
             return $this->res(1,'删除失败！');
         }
-        $this->opRec($adminId,'字典模块','删除字典项',0);
+        $this->opRec($adminId,'字典模块',$id,'删除字典项',0);
         return $this->res(0,'删除成功！');
     }
 //    创建更改字典项
@@ -85,10 +85,10 @@ class DictController extends BaseController
         $res = DB::table($this->dictData_table)->updateOrInsert(['dictDataId'=>$request->dictDataId],$data);
 
         if (!$res){
-            $this->opRec($adminId,'字典模块','添加或修改字典值',1);
+            $this->opRec($adminId,'字典模块',$data,'添加或修改字典值',1);
             return $this->res(1,'操作失败！');
         }
-        $this->opRec($adminId,'字典模块','添加或修改字典值',0);
+        $this->opRec($adminId,'字典模块',$data,'添加或修改字典值',0);
         return $this->res(0,'操作成功！');
     }
     //    删除字典项
@@ -97,10 +97,10 @@ class DictController extends BaseController
         $adminId = $request->admin->userId;
         $res = $this->deleteData($this->dictData_table,'dictDataId',$id);
         if (!$res) {
-            $this->opRec($adminId,'字典模块','删除字典项值',1);
+            $this->opRec($adminId,'字典模块',$id,'删除字典项值',1);
             return $this->res(1,'删除失败！');
         }
-        $this->opRec($adminId,'字典模块','删除字典项值',0);
+        $this->opRec($adminId,'字典模块',$id,'删除字典项值',0);
         return $this->res(0,'删除成功！');
     }
 }
