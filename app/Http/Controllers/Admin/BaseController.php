@@ -16,6 +16,7 @@ class BaseController extends Controller
     protected $dict_table = 'dict';
     protected $dictData_table = 'dict_data';
     protected $org_table = 'organization';
+    protected $file_table = 'files';
 
     public function __construct(Request $request)
     {

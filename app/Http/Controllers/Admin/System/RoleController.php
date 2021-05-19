@@ -83,9 +83,9 @@ class RoleController extends BaseController
         $adminId = $request->admin->userId;
         $menuIds = $request->all();
         $parm['roleId'] = $roleId;
-        $parm['roleMenu'] = json_encode($menuIds);
+        $parm['roleMenu'] = $data['roleMenu'] = json_encode($menuIds);
 
-        $res = $this->updateData($this->role_table,'roleId',$roleId,$parm['roleMenu']);
+        $res = $this->updateData($this->role_table,'roleId',$roleId,$data);
         if (!$res){
             $this->opRec($adminId,'角色模块',$parm,'编辑角色权限',1);
             return $this->res(1,'修改失败！');

@@ -33,6 +33,10 @@ Route::group(['middleware'=>'auth_passport'],function (){
     Route::get('/main/menu',[MainController::class,'menus']);
     Route::put('/main/profile/{id}',[MainController::class,'profile']);
 
+    Route::post('/file/upload',[FileController::class,'upload']);
+    Route::get('/file/list',[FileController::class,'getFileList']);
+    Route::post('/file/create',[FileController::class,'createFile']);
+
     Route::get('/sys/loginRecord/page',[LogController::class,'loginRecord']);
     Route::get('/sys/operRecord/page',[LogController::class,'oplog']);
 
@@ -54,6 +58,7 @@ Route::group(['middleware'=>'auth_passport'],function (){
     Route::put('/sys/role/menu/{id}',[RoleController::class,'editRoleRight']);
 
     Route::get('/sys/menu',[MenuController::class,'getMenu']);
+    Route::post('/sys/menu',[MenuController::class,'createMenu']);
     Route::put('/sys/menu',[MenuController::class,'editMenu']);
     Route::put('/sys/menu/{id}',[MenuController::class,'deleteMenu']);
 

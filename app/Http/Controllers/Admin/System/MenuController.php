@@ -37,8 +37,8 @@ class MenuController extends BaseController
     public function createMenu(Request $request)
     {
         $adminId = $request->admin->userId;
-        $data = $request->all();
-        $data['isShow'] = $request->post('isShow')?0:1;
+        $data = $request->except('isShow');
+//        $data['isShow'] = $request->post('isShow')?0:1;
         $data['uid'] = $adminId;
 
         $res = $this->insertData($this->menu_table,$data);
