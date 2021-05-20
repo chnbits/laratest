@@ -20,14 +20,18 @@ class FileController extends BaseController
     //上传文件
     public function upload(Request $request)
     {
-        $directory = $request->input('directory');
+        $dir = $request->input('directory');
+        $directory = str_replace(',','/',$dir);
+
         $name = $request->file('file')->getClientOriginalName();
         $extension = $request->file('file')->extension();
         $size = $request->file('file')->getSize();
+
         $position = !empty($directory)?$directory:date('Ymd');
+
         $path = $request->file('file')->store($position,'public');
-        $name_arr = explode('.',$path);
-        $newName = $name_arr[0];
+        $path_arr = explode('.',$path);
+        $newName = $path_arr[0];
 
         $date_path = public_path().'/thumb/'.$position;
 
@@ -58,11 +62,12 @@ class FileController extends BaseController
     public function getFileList(Request $request)
     {
         $directory = $request->input('directory');
+
         $sort = $request->input('sort')?$request->input('sort'):'createTime';
         $order = $request->input('order')?$request->input('order'):'DESC';
 
         if (empty($directory)){
-            $files = DB::table($this->file_table)->where('isDirectory',1)->orderBy($sort,$order)->get()->all();
+            $files = DB::table($this->file_table)->where('isDirectory',1)->where('directory',null)->orderBy($sort,$order)->get()->all();
         }else{
             $files = DB::table($this->file_table)->where('directory',$directory)->orderBy($sort,$order)->get()->all();
         }
@@ -72,12 +77,14 @@ class FileController extends BaseController
     public function createFile(Request $request)
     {
         $file_name = $request->input('filename');
+        $directory = $request->input('path');
+
         if (empty($file_name)){
             return $this->res(1,'请输入文件名！');
         }
-        File::makeDirectory(public_path().'/files/'.$file_name, 777, true, true);
-        File::makeDirectory(public_path().'/thumb/'.$file_name, 777, true, true);
-        $res = $this->insertData($this->file_table,['isDirectory'=>1,'name'=>$file_name]);
+        File::makeDirectory(public_path().'/files/'.$directory.'/'.$file_name, 777, true, true);
+        File::makeDirectory(public_path().'/thumb/'.$directory.'/'.$file_name, 777, true, true);
+        $res = $this->insertData($this->file_table,['isDirectory'=>1,'name'=>$file_name,'directory'=>$directory]);
         if (!$res){
             return $this->res(1,'添加失败！');
         }
