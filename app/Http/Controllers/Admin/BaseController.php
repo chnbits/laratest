@@ -73,7 +73,12 @@ class BaseController extends Controller
         $res = DB::table($table)->whereIn($column,$values)->update(['deleted'=>1,'updateTime' => date('Y-m-d H:i:s', time())]);
         return $res;
     }
-
+    //强制删除
+    public function forceDelete($table,$column,$value)
+    {
+        $res = DB::table($table)->where($column,$value)->delete();
+        return $res;
+    }
     //返回结果
     public function res($code,$msg,$count='',$data='')
     {

@@ -34,8 +34,10 @@ Route::group(['middleware'=>'auth_passport'],function (){
     Route::put('/main/profile/{id}',[MainController::class,'profile']);
 
     Route::post('/file/upload',[FileController::class,'upload']);
+    Route::post('/file/uploads',[FileController::class,'uploads']);
     Route::get('/file/list',[FileController::class,'getFileList']);
     Route::post('/file/create',[FileController::class,'createFile']);
+    Route::post('/file/delete',[FileController::class,'deleteFile']);
 
     Route::get('/sys/loginRecord/page',[LogController::class,'loginRecord']);
     Route::get('/sys/operRecord/page',[LogController::class,'oplog']);
