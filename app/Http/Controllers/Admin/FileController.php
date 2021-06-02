@@ -29,14 +29,12 @@ class FileController extends BaseController
 
         $path = $request->file('file')->store($position,'public');
 
-        $exist = DB::table($this->file_table)->where('directory',$directory)->where('name',$name)->exists();
-        if ($exist){
-            return $this->res(1,'文件 '.$name.' 已存在！');
-        }
-        $res = $this->makeUpload($name,$size,$extension,$position,$path);
-
-        if (!$res){
-            return $this->res(1,'上传失败！');
+        try {
+            $this->makeUpload($name,$size,$extension,$position,$path);
+        }catch (\Exception $e){
+            if($e->getCode() == 23000) {
+                return $this->res(1,'文件'.$name.'已存在，上传失败！');
+            }
         }
         return $this->res(0,'上传成功！');
     }
@@ -44,6 +42,9 @@ class FileController extends BaseController
     public function uploads(Request $request)
     {
         $files = $request->allFiles();
+        if(empty($files)){
+            return $this->res(1,'请选择需要上传的文件！');
+        }
         $dir = $request->input('path');
         foreach ($files as $file){
             $extension = $file->extension();
@@ -51,13 +52,15 @@ class FileController extends BaseController
             $size = $file->getSize();
             $position = !empty($dir)?$dir:date('Ymd');
             $path = $file->store($position,'public');
-            $exist = DB::table($this->file_table)->where('directory',$dir)->where('name',$name)->exists();
-            if ($exist){
-                return $this->res(1,'文件 '.$name.' 已存在！请删除后再上传');
-            }
-            $this->makeUpload($name,$size,$extension,$position,$path);
-        }
 
+            try {
+                $this->makeUpload($name,$size,$extension,$position,$path);
+            }catch (\Exception $e){
+                if($e->getCode() == 23000) {
+                    return $this->res(1,'文件'.$name.'已存在，上传失败！');
+                }
+            }
+        }
         return $this->res(0,'上传完成！');
     }
     //获取文件列表
@@ -81,18 +84,17 @@ class FileController extends BaseController
         $file_name = $request->input('filename');
         $directory = $request->input('path');
 
-        $exist = DB::table($this->file_table)->where('directory',$directory)->where('name',$file_name)->exists();
-        if ($exist){
-            return $this->res(1,'文件夹已存在！');
-        }
         if (empty($file_name)){
             return $this->res(1,'请输入文件夹名！');
         }
         File::makeDirectory(public_path().'/files/'.$directory.'/'.$file_name, 777, true, true);
         File::makeDirectory(public_path().'/thumb/'.$directory.'/'.$file_name, 777, true, true);
-        $res = $this->insertData($this->file_table,['isDirectory'=>1,'name'=>$file_name,'directory'=>$directory]);
-        if (!$res){
-            return $this->res(1,'添加失败！');
+        try {
+            $this->insertData($this->file_table,['isDirectory'=>1,'name'=>$file_name,'directory'=>$directory]);
+        }catch (\Exception $e){
+            if ($e->getCode()==23000){
+                return $this->res(1,$file_name.'文件夹已存在,添加失败！');
+            }
         }
         return $this->res(0,'添加成功！');
     }
@@ -119,7 +121,7 @@ class FileController extends BaseController
         $ext = array('jpg','png','bmp','jpeg');
         if (in_array($extension,$ext)){
             Image::make(public_path().'/files/'.$path)->heighten(200)->save(public_path().'/thumb/'.$newName.'-thumb.'.$extension);
-            $data['thumbnail'] = '/thumb/'.$newName.'-thumb.'.$extension;
+            $data['thumbnail'] = 'thumb/'.$newName.'-thumb.'.$extension;
         }
         $data['name'] = $name;
         $data['length'] = $size;
@@ -132,18 +134,52 @@ class FileController extends BaseController
     //删除文件和文件夹
     public function deleteFile(Request $request)
     {
+        $path_arr = array();
+        $thumb_arr = array();
         $files = $request->all();
         foreach ($files as $file)
         {
             $isDir = $file['isDirectory'];
             $name = $file['name'];
+            $url = $file['url'];
+            $thumb = $file['thumbnail'];
+            $path = str_replace(env('APP_URL'),'',$url);
+            $thumb_path = str_replace(env('APP_URL'),'',$thumb);
             $dir = $file['directory'];
+
             if ($isDir === 1){
+                $exist = File::exists(public_path().'/files/'.$dir.'/'.$name);
+                if (!$exist){
+                    return $this->res(1,'文件夹 '.$name.' 不存在！');
+                }
+                try {
+                    rmdir(public_path().'/files/'.$dir.'/'.$name);
+                }catch (\Exception $e){
+                    if($e->getCode() === 0 ){
+                        return $this->res(1,'请先删除'.$name.'文件夹下所有文件后重试');
+                    }
+                }
+                //删除thumb文件夹
+                rmdir(public_path().'/thumb/'.$dir.'/'.$name);
+
                 DB::table($this->file_table)->where('directory','REGEXP',$dir?$dir.'/'.$name:$name)->delete();
                 $this->forceDelete($this->file_table,'name',$name);
             }else{
-                $this->forceDelete($this->file_table,'name',$name);
+                $path_arr[] = $path;
+                if (File::exists($thumb_path)){
+                   $thumb_arr[] = $thumb_path;
+                }
+                $db_res = $this->forceDelete($this->file_table,'url',$path);
+                if (!$db_res){
+                    $this->res(1,'删除失败！');
+                }
             }
         }
+        $file_res = File::delete($path_arr);
+        $thumb_res = File::delete($thumb_arr);
+        if (!$file_res || !$thumb_res){
+            return $this->res(1,'删除失败！');
+        }
+        return $this->res(0,'删除成功！');
     }
 }
