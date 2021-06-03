@@ -20,21 +20,21 @@ class FileController extends BaseController
     {
         $dir = $request->input('directory');
         $directory = str_replace(',','/',$dir);
-
         $name = $request->file('file')->getClientOriginalName();
         $extension = $request->file('file')->extension();
         $size = $request->file('file')->getSize();
+        $position = !empty($directory)?$directory:null;
 
-        $position = !empty($directory)?$directory:date('Ymd');
+        $exist = DB::table($this->file_table)->where('directory',$position)->where('name',$name)->exists();
+        if ($exist){
+            return $this->res(1,'文件'.$name.'已存在，上传失败！');
+        }
 
         $path = $request->file('file')->store($position,'public');
+        $res = $this->makeUpload($name,$size,$extension,$position,$path);
 
-        try {
-            $this->makeUpload($name,$size,$extension,$position,$path);
-        }catch (\Exception $e){
-            if($e->getCode() == 23000) {
-                return $this->res(1,'文件'.$name.'已存在，上传失败！');
-            }
+        if (!$res){
+            return $this->res(1,'文件'.$name.'上传失败！');
         }
         return $this->res(0,'上传成功！');
     }
@@ -42,23 +42,22 @@ class FileController extends BaseController
     public function uploads(Request $request)
     {
         $files = $request->allFiles();
-        if(empty($files)){
-            return $this->res(1,'请选择需要上传的文件！');
-        }
         $dir = $request->input('path');
         foreach ($files as $file){
             $extension = $file->extension();
             $name = $file->getClientOriginalName();
             $size = $file->getSize();
-            $position = !empty($dir)?$dir:date('Ymd');
-            $path = $file->store($position,'public');
+            $position = !empty($dir)?$dir:null;
 
-            try {
-                $this->makeUpload($name,$size,$extension,$position,$path);
-            }catch (\Exception $e){
-                if($e->getCode() == 23000) {
-                    return $this->res(1,'文件'.$name.'已存在，上传失败！');
-                }
+            $exist = DB::table($this->file_table)->where('directory',$position)->where('name',$name)->exists();
+            if ($exist){
+                return $this->res(1,'文件'.$name.'已存在，上传失败！');
+            }
+
+            $path = $file->store($position,'public');
+            $res = $this->makeUpload($name,$size,$extension,$position,$path);
+            if (!$res){
+                return $this->res(1,'文件'.$name.'上传失败！');
             }
         }
         return $this->res(0,'上传完成！');
@@ -72,7 +71,7 @@ class FileController extends BaseController
         $order = $request->input('order')?$request->input('order'):'DESC';
 
         if (empty($directory)){
-            $files = DB::table($this->file_table)->where('isDirectory',1)->where('directory',null)->orderBy($sort,$order)->get()->all();
+            $files = DB::table($this->file_table)->where('directory',null)->orderBy($sort,$order)->get()->all();
         }else{
             $files = DB::table($this->file_table)->where('directory',$directory)->orderBy($sort,$order)->get()->all();
         }
@@ -104,20 +103,11 @@ class FileController extends BaseController
     {
         $path_arr = explode('.',$path);
         $newName = $path_arr[0];
-
-        $date_path = public_path().'/thumb/'.$position;
-
-        if (!File::exists($date_path)) {
-            $file_data = array(
-                'isDirectory'=>1,
-                'name'=>date('Ymd'),
-            );
-            File::makeDirectory($date_path, 777, true, true);
-            $exist = DB::table($this->file_table)->where('directory',null)->where('name',date('Ymd'))->exists();
-            if (!$exist){
-                $this->insertData($this->file_table,$file_data);
-            }
+        $file_path = public_path().'/thumb/'.$position;
+        if (!File::exists($file_path)) {
+            File::makeDirectory($file_path, 777, true, true);
         }
+
         $ext = array('jpg','png','bmp','jpeg');
         if (in_array($extension,$ext)){
             Image::make(public_path().'/files/'.$path)->heighten(200)->save(public_path().'/thumb/'.$newName.'-thumb.'.$extension);
@@ -127,8 +117,7 @@ class FileController extends BaseController
         $data['length'] = $size;
         $data['url'] = 'files/'.$path;
         $data['directory'] = $position;
-        $res = $this->insertData($this->file_table,$data);
-        return $res;
+        return $this->insertData($this->file_table,$data);
     }
 
     //删除文件和文件夹
