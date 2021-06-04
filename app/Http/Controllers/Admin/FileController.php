@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Admin;
 
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -90,7 +91,7 @@ class FileController extends BaseController
         File::makeDirectory(public_path().'/thumb/'.$directory.'/'.$file_name, 777, true, true);
         try {
             $this->insertData($this->file_table,['isDirectory'=>1,'name'=>$file_name,'directory'=>$directory]);
-        }catch (\Exception $e){
+        }catch (Exception $e){
             if ($e->getCode()==23000){
                 return $this->res(1,$file_name.'文件夹已存在,添加失败！');
             }
@@ -143,7 +144,7 @@ class FileController extends BaseController
                 }
                 try {
                     rmdir(public_path().'/files/'.$dir.'/'.$name);
-                }catch (\Exception $e){
+                }catch (Exception $e){
                     if($e->getCode() === 0 ){
                         return $this->res(1,'请先删除'.$name.'文件夹下所有文件后重试');
                     }
@@ -170,5 +171,10 @@ class FileController extends BaseController
             return $this->res(1,'删除失败！');
         }
         return $this->res(0,'删除成功！');
+    }
+    /*获取图标元素*/
+    public function getIcons()
+    {
+        return  file_get_contents(public_path().'/icons/icons.json');
     }
 }

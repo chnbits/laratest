@@ -9,7 +9,6 @@ use App\Http\Controllers\Admin\System\MenuController;
 use App\Http\Controllers\Admin\System\OrganizeController;
 use App\Http\Controllers\Admin\System\RoleController;
 use App\Http\Controllers\Admin\System\UserController;
-use App\Http\Controllers\Admin\SystemController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -38,6 +37,7 @@ Route::group(['middleware'=>'auth_passport'],function (){
     Route::get('/file/list',[FileController::class,'getFileList']);
     Route::post('/file/create',[FileController::class,'createFile']);
     Route::post('/file/delete',[FileController::class,'deleteFile']);
+    Route::get('/file/icons',[FileController::class,'getIcons']);
 
     Route::get('/sys/loginRecord/page',[LogController::class,'loginRecord']);
     Route::get('/sys/operRecord/page',[LogController::class,'oplog']);
