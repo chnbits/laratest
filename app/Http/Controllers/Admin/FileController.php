@@ -118,6 +118,7 @@ class FileController extends BaseController
         $data['length'] = $size;
         $data['url'] = 'files/'.$path;
         $data['directory'] = $position;
+        $data['newName'] = $newName;
         return $this->insertData($this->file_table,$data);
     }
 
