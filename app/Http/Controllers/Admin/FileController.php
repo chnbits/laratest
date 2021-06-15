@@ -44,11 +44,12 @@ class FileController extends BaseController
     {
         $files = $request->allFiles();
         $dir = $request->input('path');
+        $dir_str = str_replace(',','/',$dir);
         foreach ($files as $file){
             $extension = $file->extension();
             $name = $file->getClientOriginalName();
             $size = $file->getSize();
-            $position = !empty($dir)?$dir:null;
+            $position = !empty($dir_str)?$dir_str:null;
 
             $exist = DB::table($this->file_table)->where('directory',$position)->where('name',$name)->exists();
             if ($exist){
@@ -72,31 +73,48 @@ class FileController extends BaseController
         $order = $request->input('order')?$request->input('order'):'DESC';
 
         if (empty($directory)){
-            $files = DB::table($this->file_table)->where('directory',null)->orderBy($sort,$order)->get()->all();
+            $files = DB::table($this->file_table)->where('directory','')->orderBy($sort,$order)->get()->all();
         }else{
             $files = DB::table($this->file_table)->where('directory',$directory)->orderBy($sort,$order)->get()->all();
         }
         return $this->res(0,'','',$files);
     }
-    //创建目录
+    //创建文件夹
     public function createFile(Request $request)
     {
         $file_name = $request->input('filename');
         $directory = $request->input('path');
-
+        $dir_str = implode('/',$directory);
         if (empty($file_name)){
             return $this->res(1,'请输入文件夹名！');
         }
-        File::makeDirectory(public_path().'/files/'.$directory.'/'.$file_name, 777, true, true);
-        File::makeDirectory(public_path().'/thumb/'.$directory.'/'.$file_name, 777, true, true);
-        try {
-            $this->insertData($this->file_table,['isDirectory'=>1,'name'=>$file_name,'directory'=>$directory]);
-        }catch (Exception $e){
-            if ($e->getCode()==23000){
-                return $this->res(1,$file_name.'文件夹已存在,添加失败！');
-            }
+        $exist = DB::table($this->file_table)->where('name',$file_name)->where('directory',$dir_str)->exists();
+        if ($exist){
+            return $this->res(1,'文件夹'.$file_name.'已存在,添加失败！');
         }
-        return $this->res(0,'添加成功！');
+
+        switch (count($directory)){
+            case 0:
+                $pid = 0;
+                break;
+            case 1:
+                $dir_name = $directory[count($directory)-1];
+                $pid_arr = DB::table($this->file_table)->where('pid',0)->where('name',$dir_name)->get('id')->first();
+                $pid = $pid_arr->id;
+                break;
+            default:
+                array_pop($directory);
+                $par_str = implode('/',$directory);
+                $pid_arr = DB::table($this->file_table)->where('directory',$par_str)->get('id')->first();
+                $pid = $pid_arr->id;
+        }
+        $res = $this->insertData($this->file_table,['pid'=>$pid,'isDirectory'=>1,'name'=>$file_name,'directory'=>$dir_str]);
+        if (!$res){
+            return $this->res(1,'文件夹'.$file_name.'添加失败！');
+        }
+        File::makeDirectory(public_path().'/files/'.$dir_str.'/'.$file_name, 777, true, true);
+        File::makeDirectory(public_path().'/thumb/'.$dir_str.'/'.$file_name, 777, true, true);
+        return $this->res(0,'文件夹'.$file_name.'添加成功！');
     }
 
     //封装上传接口
@@ -140,21 +158,22 @@ class FileController extends BaseController
 
             if ($isDir === 1){
                 $exist = File::exists(public_path().'/files/'.$dir.'/'.$name);
-                if (!$exist){
+                $exist_db = DB::table($this->file_table)->where('name',$name)->where('directory',$dir?$dir:'')->exists();
+                if ($exist && $exist_db){
+                    try {
+                        rmdir(public_path().'/files/'.$dir.'/'.$name);
+                        //删除thumb文件夹
+                        rmdir(public_path().'/thumb/'.$dir.'/'.$name);
+                    }catch (Exception $e){
+                        if($e->getCode() === 0 ){
+                            return $this->res(1,'请先删除'.$name.'文件夹下所有文件后重试');
+                        }
+                    }
+                    DB::table($this->file_table)->where('directory','REGEXP','^'.$dir?$dir.'/'.$name:$name)->delete();//删除文件夹内文件
+                    DB::table($this->file_table)->where('name',$name)->where('directory',$dir?$dir:'')->delete();//删除文件夹
+                }else{
                     return $this->res(1,'文件夹 '.$name.' 不存在！');
                 }
-                try {
-                    rmdir(public_path().'/files/'.$dir.'/'.$name);
-                }catch (Exception $e){
-                    if($e->getCode() === 0 ){
-                        return $this->res(1,'请先删除'.$name.'文件夹下所有文件后重试');
-                    }
-                }
-                //删除thumb文件夹
-                rmdir(public_path().'/thumb/'.$dir.'/'.$name);
-
-                DB::table($this->file_table)->where('directory','REGEXP',$dir?$dir.'/'.$name:$name)->delete();
-                $this->forceDelete($this->file_table,'name',$name);
             }else{
                 $path_arr[] = $path;
                 if (File::exists($thumb_path)){
@@ -177,5 +196,31 @@ class FileController extends BaseController
     public function getIcons()
     {
         return  file_get_contents(public_path().'/icons/icons.json');
+    }
+    /*获取目录列表*/
+    public function getDir()
+    {
+        $folders = DB::table($this->file_table)->where('isDirectory',1)->get()->toArray();
+
+        $temp = array();
+        foreach ($folders as $folder){
+            $temp[$folder->id] = (array)$folder;
+        }
+
+        $res = $this->eachArr($temp);
+        return $this->res(0,'OK','',$res);
+    }
+    /*遍历多层级数据*/
+    public function eachArr($data,$pid=0)
+    {
+        $result = array();
+        foreach ($data as $value)
+        {
+            if ($value['pid'] == $pid){
+                $value['children'] = $this->eachArr($data,$value['id']);
+                $result[] = $value;
+            }
+        }
+        return $result;
     }
 }

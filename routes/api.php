@@ -38,6 +38,7 @@ Route::group(['middleware'=>'auth_passport'],function (){
     Route::post('/file/create',[FileController::class,'createFile']);
     Route::post('/file/delete',[FileController::class,'deleteFile']);
     Route::get('/file/icons',[FileController::class,'getIcons']);
+    Route::get('/file/dir',[FileController::class,'getDir']);
 
     Route::get('/sys/loginRecord/page',[LogController::class,'loginRecord']);
     Route::get('/sys/operRecord/page',[LogController::class,'oplog']);
