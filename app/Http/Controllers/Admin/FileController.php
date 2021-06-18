@@ -190,11 +190,6 @@ class FileController extends BaseController
         }
         return $this->res(0,'删除成功！');
     }
-    /*获取图标元素*/
-    public function getIcons()
-    {
-        return  file_get_contents(public_path().'/icons/icons.json');
-    }
     /*获取目录列表*/
     public function getDir()
     {
@@ -206,7 +201,8 @@ class FileController extends BaseController
         }
 
         $res = $this->eachArr($temp);
-        return $this->res(0,'OK','',$res);
+        $data[0] = array('name'=>'root','children'=>$res);
+        return $this->res(0,'OK','',$data);
     }
     /*遍历多层级数据*/
     public function eachArr($data,$pid=0)
@@ -220,5 +216,52 @@ class FileController extends BaseController
             }
         }
         return $result;
+    }
+    //移动文件
+    public function moveFiles(Request $request)
+    {
+        $url_arr = $request->input('urls');
+        $to_file_arr = $request->input('toFile');
+        $thumbs = $request->input('thumbs');
+
+        foreach ($url_arr as $file){//移动原文件
+           $path = str_replace(env('APP_URL'),'',$file);
+           $path_arr = explode('/',$file);
+           $name = $path_arr[count($path_arr)-1];
+           $old_path = public_path().'/'.$path;
+            foreach ($to_file_arr as $folder){
+                $folder = $folder=='root'?null:$folder;
+                $new_path = public_path().'/files/'.$folder;
+                $res = File::move($old_path,$new_path.'/'.$name);
+                if (!$res){
+                    return $this->res(1,'文件移动失败！');
+                }
+                $res_db = DB::table($this->file_table)->where('url',$path)->update(['url'=>'files/'.$folder.'/'.$name,'directory'=>$folder]);
+                if (!$res_db){
+                    return $this->res(1,'移动失败！');
+                }
+            }
+        }
+        foreach ($thumbs as $thumb){//移动缩略图
+            if(!empty($thumb)){
+                $thumb = str_replace(env('APP_URL'),'',$thumb);
+                $path_arr = explode('/',$thumb);
+                $name = $path_arr[count($path_arr)-1];
+                $old_path = public_path().'/'.$thumb;
+                foreach ($to_file_arr as $folder){
+                    $folder = $folder=='root'?null:$folder;
+                    $new_path = public_path().'/thumb/'.$folder;
+                    $res = File::move($old_path,$new_path.'/'.$name);
+                    if (!$res){
+                        return $this->res(1,'缩略图移动失败！');
+                    }
+                    $res_db = DB::table($this->file_table)->where('thumbnail',$thumb)->update(['thumbnail'=>'thumb/'.$folder.'/'.$name]);
+                    if (!$res_db){
+                        return $this->res(1,'缩略图移动失败！');
+                    }
+                }
+            }
+        }
+        return $this->res(0,'移动成功！');
     }
 }
