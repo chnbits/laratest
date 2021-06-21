@@ -223,7 +223,9 @@ class FileController extends BaseController
         $url_arr = $request->input('urls');
         $to_file_arr = $request->input('toFile');
         $thumbs = $request->input('thumbs');
-
+        if (empty($to_file_arr)){
+            return $this->res(1,'请选择目标文件夹！');
+        }
         foreach ($url_arr as $file){//移动原文件
            $path = str_replace(env('APP_URL'),'',$file);
            $path_arr = explode('/',$file);
