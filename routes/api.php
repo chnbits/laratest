@@ -31,6 +31,7 @@ Route::group(['middleware'=>'auth_passport'],function (){
     Route::get('/main/user',[MainController::class,'getAdmin']);
     Route::get('/main/menu',[MainController::class,'menus']);
     Route::put('/main/profile/{id}',[MainController::class,'profile']);
+    Route::put('/main/password',[MainController::class,'changePsw']);
 
     Route::post('/file/upload',[FileController::class,'upload']);
     Route::post('/file/uploads',[FileController::class,'uploads']);

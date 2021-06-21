@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class MainController extends BaseController
 {
@@ -77,5 +78,25 @@ class MainController extends BaseController
         }
         $this->opRec($userId,'修改资料',$data,'修改个人资料',0);
         return $this->res(0,'修改成功！');
+    }
+    //修改密码
+    public function changePsw(Request $request)
+    {
+        $oldPsw = $request->input('oldPsw');
+        $newPsw = $request->input('newPsw');
+        $admin = $request->admin;
+        $username = $admin->username;
+        $password = $admin->password;
+
+        $hash_check = Hash::check($oldPsw,$password);
+        if (!$hash_check){
+            return $this->res(1,'原密码错误！');
+        }
+
+        $res = DB::table($this->admin_table)->where('username',$username)->update(['password'=>bcrypt($newPsw)]);
+        if (!$res){
+            return $this->res(1,'密码更改失败！');
+        }
+        return $this->res(0,'更改成功！');
     }
 }
